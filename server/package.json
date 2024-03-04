@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "GraphQL implementation for ImagesDB project.",
   "main": "src/index.js",
-  "type": "module",
   "scripts": {
     "compile": "tsc",
     "dev": "ts-node-dev --respawn ./src/index.ts",
@@ -17,5 +16,10 @@
     "@types/node": "^20.11.24",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@apollo/datasource-rest": "^6.2.2",
+    "@apollo/server": "^4.10.0",
+    "graphql-tag": "^2.12.6"
   }
 }
