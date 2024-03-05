@@ -7,14 +7,14 @@ import AppAPI from "./datasources/app.api"
 async function startApolloServer() {
   const server = new ApolloServer({ typeDefs, resolvers })
   const { url } = await startStandaloneServer(server, {
-    context: async () => {
+    context: async ({ req }) => {
       return {
         dataSources: {
           AppAPI: new AppAPI(),
         },
       }
     },
-    listen: { port: 5000 },
+    listen: { port: 4001 },
   })
 
   console.log(`GraphQL server running at: ${url}`)

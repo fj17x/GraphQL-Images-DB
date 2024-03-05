@@ -18,6 +18,18 @@ class AppAPI extends RESTDataSource {
   image(id: number) {
     return this.get(`images/${id}`)
   }
+
+  me() {
+    return this.get(`me`)
+  }
+
+  signin(credentials) {
+    return this.post("login", credentials)
+  }
+
+  register(userInfo) {
+    return this.post("register", userInfo)
+  }
 }
 
 export default AppAPI

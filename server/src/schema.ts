@@ -6,6 +6,19 @@ const typeDefs = gql`
     users: [User!]
     "Get a specific user by id"
     user(id: ID!): User
+    "Get all the images"
+    images: [Image!]
+    "Get a specific image"
+    image(id: ID!): Image
+    "Get your details"
+    me: User #Modify response
+  }
+
+  type Mutation {
+    "Register a user"
+    register: [User!]
+    "Sign in using username and password"
+    signin: User
   }
 
   "An Image uploaded by a user"
@@ -19,7 +32,7 @@ const typeDefs = gql`
     "The image's description"
     description: String
     "The id of the owner"
-    ownerId: Int
+    ownerId: ID
     "The tags related to the image"
     tags: [String]
     "Whether the image is flagged"
@@ -38,8 +51,6 @@ const typeDefs = gql`
     id: ID!
     "The user's username"
     userName: String!
-    "The user's password"
-    password: String!
     "Whether the user is an admin"
     isAdmin: Boolean
     "When the user was created"
