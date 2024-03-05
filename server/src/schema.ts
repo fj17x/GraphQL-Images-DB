@@ -5,26 +5,152 @@ const typeDefs = gql`
     "Get all the users"
     users: [User!]
     "Get a specific user by id"
-    user(id: ID!): User
+    user(id: Int!): User
     "Get all the images"
     images: [Image!]
     "Get a specific image"
-    image(id: ID!): Image
+    image(id: Int!): Image
     "Get your details"
-    me: User #Modify response
+    me: meResponse
   }
 
   type Mutation {
     "Register a user"
-    register: [User!]
+    register(userName: String!, password: String!): RegisterResponse!
     "Sign in using username and password"
-    signin: User
+    signin(userName: String!, password: String!): SigninResponse!
+    "Logout"
+    logout: LogoutResponse!
+    "Create a user (For admin)"
+    createUser(userName: String!, password: String!): RegisterResponse!
+    "Delete a user (For admin)"
+    deleteUser(idToUpdate: Int!): MessageResponse!
+    "Update a user (For admin)"
+    updateUser(userDetails: UpdateUserInput!): UpdateResponse!
+    "Partially update a user (For admin)"
+    partiallyUpdateUser(userDetails: PartialUpdateUserInput!): UpdateResponse!
+    "Create an image"
+    createImage(imageDetails: createImageInput!): CreateImageResponse!
+    "Delete an image"
+    deleteImage(idToUpdate: Int!): MessageResponse!
+    "Update an image (For admin)"
+    updateImage(imageDetails: UpdateImageInput!): UpdateResponse!
+    "Partially update an image (For admin)"
+    partiallyUpdateImage(imageDetails: PartialUpdateImageInput!): UpdateResponse!
+    "Update account details"
+    updateAccountDetails(detailsToUpdate: UpdateMe!): UpdateResponse
+    "Delete account"
+    deleteAccount: MessageResponse!
+  }
+
+  input UpdateUserInput {
+    idToUpdate: Int!
+    id: Int!
+    userName: String!
+    isAdmin: Boolean
+    password: String!
+    createdAt: String!
+    updatedAt: String!
+    destroyTime: String
+  }
+
+  input PartialUpdateUserInput {
+    idToUpdate: Int!
+    id: Int
+    userName: String
+    isAdmin: Boolean
+    password: String
+    createdAt: String
+    updatedAt: String
+    destroyTime: String
+  }
+
+  input createImageInput {
+    url: String!
+    title: String!
+    description: String
+    tags: [String!]
+  }
+
+  input UpdateImageInput {
+    idToUpdate: Int!
+    id: Int!
+    url: String!
+    title: String!
+    createdAt: String!
+    updatedAt: String!
+    isFlagged: Boolean
+    ownerId: Int
+    description: String
+    tags: [String]
+  }
+
+  input PartialUpdateImageInput {
+    idToUpdate: Int!
+    id: Int
+    url: String
+    title: String
+    createdAt: String
+    updatedAt: String
+    isFlagged: Boolean
+    ownerId: Int
+    description: String
+    tags: [String]
+  }
+
+  input UpdateMe {
+    userName: String
+    password: String
+  }
+
+  type meResponse {
+    message: String!
+    data: MeDetails!
+    links: [HATEOSLink!]!
+  }
+
+  type CreateImageResponse {
+    message: String!
+    imageId: Int!
+    links: [HATEOSLink!]!
+  }
+
+  type UpdateResponse {
+    message: String!
+    links: [HATEOSLink!]!
+  }
+
+  type MessageResponse {
+    message: String!
+  }
+
+  type RegisterResponse {
+    message: String!
+    userId: Int!
+    links: [HATEOSLink!]!
+  }
+
+  type SigninResponse {
+    message: String!
+    jwtToken: String!
+    links: [HATEOSLink!]!
+  }
+
+  type LogoutResponse {
+    message: String!
+  }
+
+  type HATEOSLink {
+    rel: String!
+    method: String!
+    href: String!
+    description: String!
   }
 
   "An Image uploaded by a user"
   type Image {
     "The image's id"
-    id: ID!
+    id: Int!
     "The image's url"
     url: String!
     "The image's title"
@@ -32,7 +158,7 @@ const typeDefs = gql`
     "The image's description"
     description: String
     "The id of the owner"
-    ownerId: ID
+    ownerId: Int
     "The tags related to the image"
     tags: [String]
     "Whether the image is flagged"
@@ -48,7 +174,7 @@ const typeDefs = gql`
   "A user who has registered"
   type User {
     "The user's id"
-    id: ID!
+    id: Int!
     "The user's username"
     userName: String!
     "Whether the user is an admin"
@@ -59,6 +185,16 @@ const typeDefs = gql`
     updatedAt: String!
     "Whether the user has been deleted"
     destroyTime: String
+  }
+
+  type MeDetails {
+    id: Int!
+    userName: String!
+    isAdmin: Boolean
+    createdAt: String!
+    updatedAt: String!
+    destroyTime: String
+    imagesUploaded: [Int!]
   }
 `
 
