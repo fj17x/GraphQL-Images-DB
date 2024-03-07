@@ -51,8 +51,8 @@ const resolvers = {
     partiallyUpdateImage: (_, { imageDetails }, { dataSources }) => {
       return dataSources.AppAPI.partiallyUpdateImage(imageDetails)
     },
-    updateAccountDetails: (_, { updateAccountDetails }, { dataSources }) => {
-      return dataSources.AppAPI.updateAccountDetails(updateAccountDetails)
+    updateAccountDetails: (_, { detailsToUpdate }, { dataSources }) => {
+      return dataSources.AppAPI.updateAccountDetails(detailsToUpdate)
     },
     deleteAccount: (_, __, { dataSources }) => {
       return dataSources.AppAPI.deleteAccount()

@@ -9,12 +9,14 @@ async function startApolloServer() {
   const { url } = await startStandaloneServer(server, {
     context: async ({ req }) => {
       const { cache } = server
-      const jwtCookie = (req.headers.cookie || "")
-        .split(";")
-        .map((cookie) => cookie.trim())
-        .find((cookie) => cookie.startsWith("jwt="))
-
-      const token = jwtCookie ? jwtCookie.split("=")[1] : ""
+      let token = ""
+      if (req.headers.cookie) {
+        const jwtCookie = req.headers.cookie
+          .split(";")
+          .map((cookie) => cookie.trim())
+          .find((cookie) => cookie.startsWith("jwt="))
+        token = jwtCookie ? jwtCookie.split("=")[1] : ""
+      }
 
       return {
         dataSources: {
