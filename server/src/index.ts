@@ -8,9 +8,17 @@ async function startApolloServer() {
   const server = new ApolloServer({ typeDefs, resolvers })
   const { url } = await startStandaloneServer(server, {
     context: async ({ req }) => {
+      const { cache } = server
+      const jwtCookie = (req.headers.cookie || "")
+        .split(";")
+        .map((cookie) => cookie.trim())
+        .find((cookie) => cookie.startsWith("jwt="))
+
+      const token = jwtCookie ? jwtCookie.split("=")[1] : ""
+
       return {
         dataSources: {
-          AppAPI: new AppAPI(),
+          AppAPI: new AppAPI({ cache, token }),
         },
       }
     },

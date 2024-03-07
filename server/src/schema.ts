@@ -3,13 +3,13 @@ import gql from "graphql-tag"
 const typeDefs = gql`
   type Query {
     "Get all the users"
-    users: [User!]
+    users(query: UsersQueryInput): UsersResponse
     "Get a specific user by id"
-    user(id: Int!): User
+    user(id: Int!): UserResponse
     "Get all the images"
-    images: [Image!]
+    images(query: ImageQueryInput): ImagesResponse
     "Get a specific image"
-    image(id: Int!): Image
+    image(id: Int!): ImageResponse
     "Get your details"
     me: meResponse
   }
@@ -41,6 +41,25 @@ const typeDefs = gql`
     updateAccountDetails(detailsToUpdate: UpdateMe!): UpdateResponse
     "Delete account"
     deleteAccount: MessageResponse!
+  }
+
+  input UsersQueryInput {
+    limit: Int
+    offset: Int
+    sortBy: String
+    sortOrder: String
+    showDeleted: Boolean
+    searchQuery: String
+    searchColumn: String
+  }
+
+  input ImageQueryInput {
+    limit: Int
+    offset: Int
+    sortBy: String
+    sortOrder: String
+    showDeleted: Boolean
+    showFlagged: Boolean
   }
 
   input UpdateUserInput {
@@ -101,6 +120,36 @@ const typeDefs = gql`
   input UpdateMe {
     userName: String
     password: String
+  }
+
+  type UsersResponse {
+    message: String!
+    fetched: Int!
+    data: [User!]
+    links: [[HATEOSLink!]]
+    totalUsers: Int!
+    totalNeededUsers: Int!
+  }
+
+  type UserResponse {
+    message: String!
+    data: User!
+    links: [HATEOSLink!]
+  }
+
+  type ImagesResponse {
+    message: String!
+    fetched: Int!
+    data: [Image!]
+    links: [[HATEOSLink!]]
+    totalImages: Int!
+    totalNeededImages: Int!
+  }
+
+  type ImageResponse {
+    message: String!
+    data: Image!
+    links: [HATEOSLink!]
   }
 
   type meResponse {

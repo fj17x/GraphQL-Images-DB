@@ -2,17 +2,29 @@ import { RESTDataSource } from "@apollo/datasource-rest"
 
 class AppAPI extends RESTDataSource {
   baseURL = "http://localhost:4000/v1/"
+  private token: string
 
-  users() {
-    return this.get("users")
+  constructor(options: { token: string; cache }) {
+    super(options)
+    this.token = options.token
+  }
+
+  willSendRequest(_, request) {
+    request.headers.Cookie = `jwt=${this.token}`
+  }
+
+  users(query) {
+    const queryString = new URLSearchParams(query).toString()
+    return this.get(`users?${queryString}`)
   }
 
   user(id: number) {
     return this.get(`users/${id}`)
   }
 
-  images() {
-    return this.get(`images`)
+  images(query) {
+    const queryString = new URLSearchParams(query).toString()
+    return this.get(`images?${queryString}`)
   }
 
   image(id: number) {

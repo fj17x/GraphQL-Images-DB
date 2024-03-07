@@ -1,13 +1,13 @@
 const resolvers = {
   Query: {
-    users: (_, __, { dataSources }) => {
-      return dataSources.AppAPI.users()
+    users: (_, { query }, { dataSources }) => {
+      return dataSources.AppAPI.users(query)
     },
     user: (_, { id }, { dataSources }) => {
       return dataSources.AppAPI.user(id)
     },
-    images: (_, __, { dataSources }) => {
-      return dataSources.AppAPI.images()
+    images: (_, { query }, { dataSources }) => {
+      return dataSources.AppAPI.images(query)
     },
     image: (_, { id }, { dataSources }) => {
       return dataSources.AppAPI.image(id)
@@ -52,10 +52,10 @@ const resolvers = {
       return dataSources.AppAPI.partiallyUpdateImage(imageDetails)
     },
     updateAccountDetails: (_, { updateAccountDetails }, { dataSources }) => {
-      return dataSources.AppAPI.me(updateAccountDetails)
+      return dataSources.AppAPI.updateAccountDetails(updateAccountDetails)
     },
     deleteAccount: (_, __, { dataSources }) => {
-      return dataSources.AppAPI.me()
+      return dataSources.AppAPI.deleteAccount()
     },
   },
 }
