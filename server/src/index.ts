@@ -6,10 +6,6 @@ import http from "http"
 import express from "express"
 import cors from "cors"
 
-interface MyContext {
-  token?: string
-}
-
 const app = express()
 const PORT = 4001
 
@@ -17,18 +13,18 @@ const httpServer = http.createServer(app).listen(PORT, () => {
   const addressInfo = httpServer.address()
   let origin = ""
   if (typeof addressInfo === "string") {
-    origin = `http://localhost:${PORT}`
+    origin = `http://localhost:${PORT}/graphql`
   } else {
     if (addressInfo.address === "::") {
-      origin = `http://localhost:${addressInfo.port}`
+      origin = `http://localhost:${addressInfo.port}/graphql`
     } else {
-      origin = `http://${addressInfo.address}:${addressInfo.port}`
+      origin = `http://${addressInfo.address}:${addressInfo.port}/graphql`
     }
   }
   console.log(`Server running at: ${origin}`)
 })
 
-const server = new ApolloServer<MyContext>({
+const server = new ApolloServer({
   typeDefs,
   resolvers,
 })
