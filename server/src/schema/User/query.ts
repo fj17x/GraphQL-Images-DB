@@ -5,7 +5,4 @@ export const userQuery = {
   user: (_, { id }, { dataSources }) => {
     return dataSources.AppAPI.user(id)
   },
-  me: (_, __, { dataSources }) => {
-    return dataSources.AppAPI.me()
-  },
 }
