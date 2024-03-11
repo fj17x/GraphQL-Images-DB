@@ -2,18 +2,25 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const datasource_rest_1 = require("@apollo/datasource-rest");
 class AppAPI extends datasource_rest_1.RESTDataSource {
-    constructor() {
-        super(...arguments);
-        this.baseURL = "http://localhost:4000/v1/";
+    baseURL = "http://localhost:4000/v1/";
+    token;
+    constructor(options) {
+        super(options);
+        this.token = options.token;
     }
-    users() {
-        return this.get("users");
+    willSendRequest(_, request) {
+        request.headers.Cookie = `jwt=${this.token}`;
+    }
+    users(query) {
+        const queryString = new URLSearchParams(query).toString();
+        return this.get(`users?${queryString}`);
     }
     user(id) {
         return this.get(`users/${id}`);
     }
-    images() {
-        return this.get(`images`);
+    images(query) {
+        const queryString = new URLSearchParams(query).toString();
+        return this.get(`images?${queryString}`);
     }
     image(id) {
         return this.get(`images/${id}`);

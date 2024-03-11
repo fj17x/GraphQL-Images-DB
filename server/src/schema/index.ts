@@ -1,8 +1,8 @@
 import { gql } from "graphql-tag"
-import { userTypeDefs, userQuery, userMutation } from "./User"
-import { imageTypeDefs, imageQuery, imageMutation } from "./Image"
-import { authTypeDefs, authQuery, authMutation } from "./Auth"
-import { sharedTypeDefs } from "./Shared/types"
+import { userTypeDefs, userQuery, userMutation } from "./User/index.js"
+import { imageTypeDefs, imageQuery, imageMutation } from "./Image/index.js"
+import { authTypeDefs, authQuery, authMutation } from "./Auth/index.js"
+import { sharedTypeDefs } from "./Shared/types.js"
 
 export const typeDefs = gql`
   type Query
