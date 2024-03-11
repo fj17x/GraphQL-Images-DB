@@ -77,20 +77,4 @@ export const userTypeDefs = gql`
     userId: Int!
     links: [HATEOSLink!]!
   }
-
-  type UpdateResponse {
-    message: String!
-    links: [HATEOSLink!]!
-  }
-
-  type MessageResponse {
-    message: String!
-  }
-
-  type HATEOSLink {
-    rel: String!
-    method: String!
-    href: String!
-    description: String!
-  }
 `

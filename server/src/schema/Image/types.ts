@@ -105,20 +105,4 @@ export const imageTypeDefs = gql`
     imageId: Int!
     links: [HATEOSLink!]!
   }
-
-  type UpdateResponse {
-    message: String!
-    links: [HATEOSLink!]!
-  }
-
-  type MessageResponse {
-    message: String!
-  }
-
-  type HATEOSLink {
-    rel: String!
-    method: String!
-    href: String!
-    description: String!
-  }
 `
