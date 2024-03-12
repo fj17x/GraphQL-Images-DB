@@ -37,10 +37,12 @@ export const imageTypeDefs = gql`
     createImage(imageDetails: createImageInput!): CreateImageResponse!
     "Delete an image"
     deleteImage(idToUpdate: Int!): MessageResponse!
-    "Update an image (For admin)"
+    "Update an image"
     updateImage(imageDetails: UpdateImageInput!): UpdateResponse!
-    "Partially update an image (For admin)"
+    "Partially update an image "
     partiallyUpdateImage(imageDetails: PartialUpdateImageInput!): UpdateResponse!
+    "Delete all your images"
+    deleteAllImages: DeleteAllImagesResponse!
   }
 
   input ImageQueryInput {
@@ -104,5 +106,10 @@ export const imageTypeDefs = gql`
     message: String!
     imageId: Int!
     links: [HATEOSLink!]!
+  }
+
+  type DeleteAllImagesResponse {
+    message: String!
+    deletedCount: Int!
   }
 `

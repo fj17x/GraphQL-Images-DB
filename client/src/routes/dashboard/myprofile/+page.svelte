@@ -43,9 +43,21 @@
     }
     let response
     if (currentOperation === "deleteAccount") {
-      response = await fetch(`http://localhost:4000/v1/me`, {
-        method: "DELETE",
+      const response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+          mutation DeleteAccount {
+              deleteAccount {
+                  message
+              }
+          }
+        `,
+        }),
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
     } else if (currentOperation === "deleteAllImages") {
       response = await fetch(`http://localhost:4000/v1/images`, {

@@ -14,4 +14,7 @@ export const imageMutation = {
   partiallyUpdateImage: (_, { imageDetails }, { dataSources }) => {
     return dataSources.AppAPI.partiallyUpdateImage(imageDetails)
   },
+  deleteAllImages: (_, __, { dataSources }) => {
+    return dataSources.AppAPI.deleteAllImages()
+  },
 }

@@ -75,6 +75,10 @@ class AppAPI extends RESTDataSource {
     return this.patch(`images/${imageDetails.idToUpdate}`, { body: imageDetails })
   }
 
+  deleteAllImages() {
+    return this.delete(`images`)
+  }
+
   me() {
     return this.get(`me`)
   }
