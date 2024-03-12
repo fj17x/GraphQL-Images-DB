@@ -53,19 +53,12 @@
       method: "POST",
       body: JSON.stringify({
         query: `
-          query Image ($id: String!) {
+          query Image ($id: Int!) {
               image(id: $id) {
                   data {
                       id
                       url
                       title
-                      description
-                      ownerId
-                      tags
-                      isFlagged
-                      createdAt
-                      updatedAt
-                      destroyTime
                   }
               }
           }
@@ -80,20 +73,20 @@
       },
     })
 
-    let responseMessage
     const reply = await response.json()
-    console.log("🚀 ~ handleSearchSingle ~ reply:", reply)
+    let responseMessage
     if (!reply.errors) {
-      responseMessage = reply.data.Image
+      responseMessage = reply.data.image.data
       imageData = {
-        url: reply.data.url,
-        title: reply.data.title,
-        id: reply.data.id,
+        url: responseMessage.url,
+        title: responseMessage.title,
+        id: responseMessage.id,
       }
       showSimpleModal = true
     } else {
+      responseMessage = reply.errors[0].extensions.response.body.error
       alertModalOptions.header = "Search failed"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = `${responseMessage}`
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
@@ -115,6 +108,43 @@
       method: "GET",
       credentials: "include",
     })
+
+    const response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+          query Images {
+              images {
+                  message
+                  fetched
+                  totalImages
+                  totalNeededImages
+                  data {
+                      id
+                      url
+                      title
+                      description
+                      ownerId
+                      tags
+                      isFlagged
+                      createdAt
+                      updatedAt
+                      destroyTime
+                  }
+              }
+          }
+
+        `,
+        variables: {
+          id: searchId,
+        },
+      }),
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
     const reply = await response.json()
     if (response.ok) {
       images = reply.data

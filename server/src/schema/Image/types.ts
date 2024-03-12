@@ -29,7 +29,7 @@ export const imageTypeDefs = gql`
     "Get a specific image"
     image(id: Int!): ImageResponse
     "Get all the images"
-    images: ImagesResponse
+    images(query: ImagesQueryInput): ImagesResponse
   }
 
   extend type Mutation {
@@ -45,13 +45,16 @@ export const imageTypeDefs = gql`
     deleteAllImages: DeleteAllImagesResponse!
   }
 
-  input ImageQueryInput {
+  input ImagesQueryInput {
     limit: Int
     offset: Int
     sortBy: String
     sortOrder: String
     showDeleted: Boolean
     showFlagged: Boolean
+    searchQuery: Int
+    searchColumn: String
+    tags: [String!]
   }
 
   input createImageInput {

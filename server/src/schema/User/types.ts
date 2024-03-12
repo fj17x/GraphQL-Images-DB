@@ -21,7 +21,7 @@ export const userTypeDefs = gql`
     "Get a specific user by id"
     user(id: Int!): UserResponse
     "Get all the users"
-    users: UsersResponse
+    users(query: UsersQueryInput): UsersResponse
   }
 
   extend type Mutation {
@@ -44,6 +44,16 @@ export const userTypeDefs = gql`
     createdAt: String!
     updatedAt: String!
     destroyTime: String
+  }
+
+  input UsersQueryInput {
+    limit: Int
+    offset: Int
+    sortBy: String
+    sortOrder: String
+    showDeleted: Boolean
+    searchQuery: Int
+    searchColumn: String
   }
 
   input PartialUpdateUserInput {
