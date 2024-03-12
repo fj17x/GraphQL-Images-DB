@@ -5,17 +5,30 @@
   import "@fortawesome/fontawesome-free/css/all.min.css"
 
   const checkSignedIn = async () => {
-    const response = await fetch(`http://localhost:4000/v1/me`, {
-      method: "GET",
+    const response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+          query Me {
+              me {
+                  message
+              }
+          }
+        `,
+      }),
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
-    if (!response.ok) {
+    const reply = await response.json()
+    if (reply.errors) {
       {
         userDetails.set({})
         return
       }
     }
-    const reply = await response.json()
+
     userDetails.set(reply.data)
   }
 

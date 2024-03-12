@@ -8,6 +8,7 @@ import cors from "cors"
 
 const app = express()
 const PORT = 4001
+const allowedOrigin = "http://localhost:5173"
 
 const httpServer = http.createServer(app).listen(PORT, () => {
   const addressInfo = httpServer.address()
@@ -33,7 +34,10 @@ await server.start()
 
 app.use(
   "/graphql",
-  cors(),
+  cors({
+    origin: allowedOrigin,
+    credentials: true,
+  }),
   express.json(),
   expressMiddleware(server, {
     context: async ({ req }) => {

@@ -6,15 +6,40 @@
   let images = []
 
   const fetchNextImages = async () => {
-    const response = await fetch(
-      `http://localhost:4000/v1/images?offset=${currentOffset}&sortBy=id&sortOrder=asc&showDeleted=true&showFlagged=true`,
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    )
+    const response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+          query Images {
+            images {
+                message
+                fetched
+                totalImages
+                totalNeededImages
+                data {
+                    id
+                    url
+                    title
+                    description
+                    ownerId
+                    tags
+                    isFlagged
+                    createdAt
+                    updatedAt
+                    destroyTime
+                }
+            }
+        }
+        `,
+      }),
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
 
     const imagesReply = await response.json()
+    console.log("🚀 ~ fetchNextImages ~ imagesReply:", imagesReply)
 
     if (!imagesReply.data || imagesReply.data.length === 0) {
       return

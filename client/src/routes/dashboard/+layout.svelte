@@ -11,14 +11,37 @@
     if ($userDetails.userName) {
       return
     }
+
     try {
-      const response = await fetch(`http://localhost:4000/v1/me`, {
-        method: "GET",
+      const response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+          query Me {
+              me {
+                  message
+                  data {
+                      id
+                      userName
+                      isAdmin
+                      createdAt
+                      updatedAt
+                      destroyTime
+                      imagesUploaded
+                  }
+              }
+          }
+        `,
+        }),
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
 
       const reply = await response.json()
-      if (!response.ok) {
+      console.log("🚀 ~ checkSignedIn ~ reply:", reply)
+      if (reply.errors) {
         {
           userDetails.set({})
           alertModalOptions.header = "Cannot access page"
@@ -28,7 +51,9 @@
           return
         }
       }
-      userDetails.set(reply.data)
+      let responseData = reply.data.signin.data
+      console.log("🚀 ~ checkSignedIn ~ responseData:", responseData)
+      userDetails.set(responseData)
     } catch (err) {
       alertModalOptions.header = "Cannot access page"
       alertModalOptions.message = "Server may be down!"

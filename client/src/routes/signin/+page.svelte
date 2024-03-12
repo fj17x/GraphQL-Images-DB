@@ -12,24 +12,38 @@
   const handleSignIn = async () => {
     try {
       isLoading = true
-      const data = { userName: userName.trim(), password: password.trim() }
-      const response = await fetch(`http://localhost:4000/v1/auth/signin`, {
+      const response = await fetch(`http://localhost:4001/graphql`, {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          query: `
+          mutation Signin($userName: String!, $password: String!) {
+            signin(userName: $userName, password: $password) {
+              message
+            }
+          }
+        `,
+          variables: {
+            userName: userName.trim(),
+            password: password.trim(),
+          },
+        }),
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
       })
       const reply = await response.json()
-      if (response.ok) {
+      let responseMessage
+      if (!reply.errors) {
+        responseMessage = reply.data.signin.message
         alertModalOptions.header = "Sign in successfull"
-        alertModalOptions.message = `${reply.message}`
+        alertModalOptions.message = `${responseMessage}`
         alertModalOptions.type = "success"
         showAlertModal = true
       } else {
+        responseMessage = reply.errors[0].extensions.response.body.error
         alertModalOptions.header = "Sign in failed"
-        alertModalOptions.message = `${reply.error}`
+        alertModalOptions.message = `${responseMessage}`
         alertModalOptions.type = "failure"
         showAlertModal = true
       }

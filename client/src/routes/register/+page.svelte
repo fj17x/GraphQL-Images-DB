@@ -13,7 +13,6 @@
   const handleRegister = async () => {
     try {
       isLoading = true
-
       if (password.trim() !== confirmPassword.trim()) {
         alertModalOptions.header = "Could not register"
         alertModalOptions.message = "Password does not match."
@@ -22,23 +21,38 @@
         isLoading = false
         return
       }
-      const data = { userName: userName.trim(), password: password.trim() }
-      const response = await fetch(`http://localhost:4000/v1/auth/register`, {
+      const response = await fetch(`http://localhost:4001/graphql`, {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          query: `
+          mutation Register($userName: String!, $password: String!) {
+            register(userName: $userName, password: $password) {
+              message
+            }
+          }
+        `,
+          variables: {
+            userName: userName.trim(),
+            password: password.trim(),
+          },
+        }),
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
       })
       const reply = await response.json()
-      if (response.ok) {
+      let responseMessage
+      if (!reply.errors) {
+        responseMessage = reply.data.register.message
         alertModalOptions.header = "Registered successfully"
-        alertModalOptions.message = reply.message
+        alertModalOptions.message = `${responseMessage}`
         alertModalOptions.type = "success"
         showAlertModal = true
       } else {
+        responseMessage = reply.errors[0].extensions.response.body.error
         alertModalOptions.header = "Could not register"
-        alertModalOptions.message = `${reply.error}`
+        alertModalOptions.message = `${responseMessage}`
         alertModalOptions.type = "failure"
         showAlertModal = true
       }
