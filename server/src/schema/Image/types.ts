@@ -27,7 +27,7 @@ export const imageTypeDefs = gql`
 
   extend type Query {
     "Get a specific image"
-    image(id: String!): ImageResponse
+    image(id: Int!): ImageResponse
     "Get all the images"
     images: ImagesResponse
   }

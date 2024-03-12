@@ -48,12 +48,43 @@
 
   const handleSearchSingle = async () => {
     const searchId = idForSimple
-    const response = await fetch(`http://localhost:4000/v1/images/${searchId}`, {
-      method: "GET",
+
+    const response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+          query Image ($id: String!) {
+              image(id: $id) {
+                  data {
+                      id
+                      url
+                      title
+                      description
+                      ownerId
+                      tags
+                      isFlagged
+                      createdAt
+                      updatedAt
+                      destroyTime
+                  }
+              }
+          }
+        `,
+        variables: {
+          id: searchId,
+        },
+      }),
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
+
+    let responseMessage
     const reply = await response.json()
-    if (response.ok) {
+    console.log("🚀 ~ handleSearchSingle ~ reply:", reply)
+    if (!reply.errors) {
+      responseMessage = reply.data.Image
       imageData = {
         url: reply.data.url,
         title: reply.data.title,
