@@ -43,7 +43,7 @@
     }
     let response
     if (currentOperation === "deleteAccount") {
-      const response = await fetch(`http://localhost:4001/graphql`, {
+      response = await fetch(`http://localhost:4001/graphql`, {
         method: "POST",
         body: JSON.stringify({
           query: `
@@ -60,24 +60,48 @@
         },
       })
     } else if (currentOperation === "deleteAllImages") {
-      response = await fetch(`http://localhost:4000/v1/images`, {
-        method: "DELETE",
+      response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+         mutation DeleteAllImages {
+              deleteAllImages {
+                  message
+                  deletedCount
+              }
+          }
+        `,
+        }),
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
     } else {
       return
     }
 
     const reply = await response.json()
-    if (response.ok) {
+    console.log("🚀 ~ onChoiceConfirm ~ reply:", reply)
+    let responseData
+    if (!reply.errors) {
+      if (currentOperation === "deleteAccount") {
+        responseData = reply.data.deleteAccount
+        userDetails.set({})
+      } else {
+        responseData = reply.data.deleteAllImages
+        userDetails.update((user) => {
+          return { ...user, imagesUploaded: [], updatedAt: formatDate(Date.now()) }
+        })
+      }
       alertModalOptions.header = "Operation succeeded"
-      alertModalOptions.message = reply.message
+      alertModalOptions.message = ` ${responseData.message}`
       alertModalOptions.type = "success"
       showAlertModal = true
-      userDetails.set({})
     } else {
+      responseData = reply.errors[0].extensions.response.body.error
       alertModalOptions.header = "Operation failed"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = responseData
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
@@ -90,38 +114,52 @@
     }
   }
 
-  const onEditConfirm = async (status, data) => {
+  const onEditConfirm = async (status, { userName, password }) => {
     if (!status) {
       showEditProfileModal = false
       return
     }
-    if (data) {
-      Object.keys(data).forEach((key) => (data[key] === undefined ? delete data[key] : {}))
-    }
-
     showEditProfileModal = false
+    const response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+          mutation UpdateAccountDetails ($userName: String, $password: String ){
+              updateAccountDetails(detailsToUpdate: { userName: $userName , password: $password}) {
+                  message
+              }
+          }
+        `,
+        variables: {
+          userName: userName ?? null,
+          password: password ?? null,
+        },
+      }),
 
-    const response = await fetch(`http://localhost:4000/v1/me`, {
-      method: "PATCH",
       credentials: "include",
-      body: JSON.stringify(data),
       headers: {
         "Content-Type": "application/json",
       },
     })
 
     const reply = await response.json()
-    if (response.ok) {
+    let responseMessage
+    if (!reply.errors) {
+      responseMessage = reply.data.updateAccountDetails.message
       alertModalOptions.header = "Successfully updated"
-      alertModalOptions.message = reply.message
+      alertModalOptions.message = `${responseMessage}`
       alertModalOptions.type = "success"
       showAlertModal = true
       userDetails.update((user) => {
-        return { ...user, ...data, updatedAt: formatDate(Date.now()) }
+        if (userName) {
+          return { ...user, userName, updatedAt: formatDate(Date.now()) }
+        }
+        return { ...user, updatedAt: formatDate(Date.now()) }
       })
     } else {
+      responseMessage = reply.errors[0].extensions.response.body.error
       alertModalOptions.header = "Could not update"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = `${responseMessage}`
       alertModalOptions.type = "failure"
       showAlertModal = true
     }

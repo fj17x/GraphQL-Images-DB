@@ -12,6 +12,15 @@
           query Me {
               me {
                   message
+                  data {
+                    id
+                    userName
+                    isAdmin
+                    createdAt
+                    updatedAt
+                    destroyTime
+                    imagesUploaded
+                  }     
               }
           }
         `,
@@ -22,6 +31,7 @@
       },
     })
     const reply = await response.json()
+    let responseUserData = reply.data.me.data
     if (reply.errors) {
       {
         userDetails.set({})
@@ -29,7 +39,7 @@
       }
     }
 
-    userDetails.set(reply.data)
+    userDetails.set(responseUserData)
   }
 
   onMount(async () => {

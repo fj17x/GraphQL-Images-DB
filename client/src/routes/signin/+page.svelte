@@ -16,7 +16,7 @@
         method: "POST",
         body: JSON.stringify({
           query: `
-          mutation Signin($userName: String!, $password: String!) {
+          mutation Signin ($userName: String!, $password: String!) {
             signin(userName: $userName, password: $password) {
               message
             }
