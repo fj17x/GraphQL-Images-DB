@@ -19,7 +19,7 @@ export const userTypeDefs = gql`
 
   extend type Query {
     "Get a specific user by id"
-    user: UserResponse
+    user(id: String!): UserResponse
     "Get all the users"
     users: UsersResponse
   }

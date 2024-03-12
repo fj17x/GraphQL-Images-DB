@@ -5,6 +5,7 @@ import { typeDefs, resolvers } from "./schema/index.js"
 import http from "http"
 import express from "express"
 import cors from "cors"
+import cookieParser from "cookie-parser"
 
 const app = express()
 const PORT = 4001
@@ -38,9 +39,10 @@ app.use(
     origin: allowedOrigin,
     credentials: true,
   }),
+  cookieParser(),
   express.json(),
   expressMiddleware(server, {
-    context: async ({ req }) => {
+    context: async ({ req, res }) => {
       const { cache } = server
       let token = ""
       if (req.headers.cookie) {
@@ -55,6 +57,7 @@ app.use(
         dataSources: {
           AppAPI: new AppAPI({ cache, token }),
         },
+        res,
       }
     },
   })

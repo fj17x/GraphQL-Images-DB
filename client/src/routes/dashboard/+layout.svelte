@@ -40,7 +40,6 @@
       })
 
       const reply = await response.json()
-      console.log("🚀 ~ checkSignedIn ~ reply:", reply)
       if (reply.errors) {
         {
           userDetails.set({})
@@ -51,8 +50,7 @@
           return
         }
       }
-      let responseData = reply.data.signin.data
-      console.log("🚀 ~ checkSignedIn ~ responseData:", responseData)
+      let responseData = reply.data.me.data
       userDetails.set(responseData)
     } catch (err) {
       alertModalOptions.header = "Cannot access page"

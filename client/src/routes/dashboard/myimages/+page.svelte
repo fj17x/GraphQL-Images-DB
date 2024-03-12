@@ -12,21 +12,10 @@
         query: `
           query Images {
             images {
-                message
-                fetched
-                totalImages
-                totalNeededImages
                 data {
                     id
                     url
                     title
-                    description
-                    ownerId
-                    tags
-                    isFlagged
-                    createdAt
-                    updatedAt
-                    destroyTime
                 }
             }
         }
@@ -38,14 +27,14 @@
       },
     })
 
-    const imagesReply = await response.json()
-    console.log("🚀 ~ fetchNextImages ~ imagesReply:", imagesReply)
+    let imagesReply = await response.json()
+    imagesReply = imagesReply.data
 
-    if (!imagesReply.data || imagesReply.data.length === 0) {
+    if (!imagesReply.images || imagesReply.images.data.length === 0) {
       return
     }
 
-    const uniqueImages = imagesReply.data.filter((newImage) => {
+    const uniqueImages = imagesReply.images.data.filter((newImage) => {
       return !images.some((existingImage) => existingImage.id === newImage.id)
     })
     images = [...images, ...uniqueImages]

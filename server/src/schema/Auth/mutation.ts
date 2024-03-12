@@ -1,6 +1,11 @@
 export const authMutation = {
-  signin: (_, args, { dataSources }) => {
-    return dataSources.AppAPI.signin(args)
+  signin: async (_, args, { dataSources, res }) => {
+    const signInResponse = await dataSources.AppAPI.signin(args)
+    res.cookie("jwt", signInResponse.jwtToken, {
+      httpOnly: true,
+      sameSite: "Strict",
+    })
+    return signInResponse
   },
   register: (_, args, { dataSources }) => {
     return dataSources.AppAPI.register(args)

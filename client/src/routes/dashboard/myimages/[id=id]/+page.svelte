@@ -20,13 +20,39 @@
   let showEditImageModal = false
 
   const fetchImageWithId = async () => {
-    const response = await fetch(`http://localhost:4000/v1/images/${imageId}`, {
-      method: "GET",
+    const response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+          query Image ($imageId: String!) {
+              image (id: $imageId) {
+                  data {
+                      id
+                      url
+                      title
+                      description
+                      ownerId
+                      tags
+                      isFlagged
+                      createdAt
+                      updatedAt
+                      destroyTime
+                  }
+              }
+          }
+        `,
+        variables: {
+          imageId,
+        },
+      }),
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
 
     const imagesReply = await response.json()
-    image = imagesReply.data
+    image = imagesReply.data.image.data
   }
 
   const onEditConfirm = async (status, data) => {
