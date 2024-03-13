@@ -99,22 +99,26 @@
     params.append("sortOrder", sortOrder)
     params.append("sortBy", sortBy)
 
+    let tagsWithCommas
     if (tags.length > 0) {
-      const tagsWithCommas = tags.join(",")
-      params.append("tags", tagsWithCommas)
+      tagsWithCommas = tags.join(",")
     }
-
-    const response = await fetch(`http://localhost:4000/v1/images?${params.toString()}`, {
-      method: "GET",
-      credentials: "include",
-    })
 
     const response = await fetch(`http://localhost:4001/graphql`, {
       method: "POST",
       body: JSON.stringify({
         query: `
-          query Images {
-              images {
+          query Images ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $tags: [String!]){
+              images(
+                  query: {
+                      limit: $limit
+                      offset: $offset
+                      sortBy: $sortBy
+                      sortOrder: $sortOrder
+                      showDeleted: $showDeleted
+                      tags: $tags
+                  }
+              ) {
                   message
                   fetched
                   totalImages
@@ -133,10 +137,14 @@
                   }
               }
           }
-
         `,
         variables: {
-          id: searchId,
+          limit,
+          offset,
+          sortOrder,
+          sortBy,
+          showDeleted: true,
+          tags: tagsWithCommas,
         },
       }),
       credentials: "include",
@@ -144,14 +152,13 @@
         "Content-Type": "application/json",
       },
     })
-
     const reply = await response.json()
-    if (response.ok) {
-      images = reply.data
+    if (!reply.errors) {
+      images = reply.data.images.data
       showAdvancedModal = true
     } else {
       alertModalOptions.header = "Search failed"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = reply.errors[0].extensions.response.body.error
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
@@ -173,7 +180,7 @@
             <div>
               <label for="id">Image ID*:</label>
               <!-- svelte-ignore a11y-autofocus -->
-              <input autofocus type="number" class="form-control" name="id" bind:value={idForSimple} required />
+              <input autofocus type="number" class="form-control" name="id" bind:value={idForSimple} min="1" required />
             </div>
             <div>
               <button class="btn text-white confirm-button" type="submit">Search</button>
