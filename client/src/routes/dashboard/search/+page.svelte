@@ -119,20 +119,11 @@
                       tags: $tags
                   }
               ) {
-                  message
-                  fetched
-                  totalImages
-                  totalNeededImages
                   data {
                       id
                       url
                       title
-                      description
-                      ownerId
-                      tags
                       isFlagged
-                      createdAt
-                      updatedAt
                       destroyTime
                   }
               }

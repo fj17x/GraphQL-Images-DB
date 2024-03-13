@@ -51,26 +51,43 @@
       url = "https://picsum.photos/200/300"
     }
 
-    const data = { title, description, tags, url }
-    const response = await fetch(`http://localhost:4000/v1/images`, {
+    const response = await fetch(`http://localhost:4001/graphql`, {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        query: `
+         mutation CreateImage ($url:String!, $title:String!, $description:String, $tags:[String!]) {
+              createImage(
+                  imageDetails: { url: $url, title: $title, description: $description, tags: $tags }
+              ) {
+                  message
+                  imageId
+              }
+          }
+        `,
+        variables: {
+          url,
+          title,
+          description,
+          tags,
+        },
+      }),
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
     })
+
     const reply = await response.json()
     tags = []
-    if (response.ok) {
+    if (!reply.errors) {
       alertModalOptions.header = "Uploaded successfully"
-      alertModalOptions.message = reply.message + " Image ID: " + reply.imageId
+      alertModalOptions.message = reply.data.createImage.message + " Image ID: " + reply.data.createImage.imageId
       alertModalOptions.type = "success"
       url = "https://"
       showAlertModal = true
     } else {
       alertModalOptions.header = "Could not upload"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = reply.errors[0].extensions.response.body.error
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
