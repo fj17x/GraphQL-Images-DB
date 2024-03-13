@@ -52,7 +52,6 @@
     })
 
     const imagesReply = await response.json()
-    console.log("🚀 ~ fetchImageWithId ~ imagesReply:", imagesReply)
     image = imagesReply.data.image.data
   }
 

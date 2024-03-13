@@ -71,11 +71,8 @@ class AppAPI extends RESTDataSource {
     return this.put(`images/${imageDetails.idToUpdate}`, { body: imageDetails })
   }
 
-  async partiallyUpdateImage(imageDetails) {
-    console.log("🚀 ~ AppAPI ~ partiallyUpdateImage ~ imageDetails:", imageDetails)
-    const x = await this.patch(`images/${imageDetails.idToUpdate}`, { body: imageDetails })
-    console.log("🚀 ~ AppAPI ~ partiallyUpdateImage ~ x:", x)
-    return x
+  partiallyUpdateImage(imageDetails) {
+    return this.patch(`images/${imageDetails.idToUpdate}`, { body: imageDetails })
   }
 
   deleteAllImages() {

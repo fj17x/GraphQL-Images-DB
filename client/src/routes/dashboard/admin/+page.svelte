@@ -189,7 +189,6 @@
         },
       })
 
-      console.log("🚀 ~ fetchUsersOrImages ~ searchQuery:", searchQuery)
       const responseImages = await fetch(`http://localhost:4001/graphql`, {
         method: "POST",
         body: JSON.stringify({
@@ -360,18 +359,15 @@
     }
 
     let reply = await response.json()
-    console.log("🚀 ~ fetchUsersOrImages ~ reply:", reply)
     let responseData
 
     if (clickedBox === "users") {
       responseData = reply.data.users
-      console.log("🚀 ~ fetchUsersOrImages ~ responseData:", responseData)
       totalUsers = responseData.totalUsers || 0
       totalUsersFound = responseData.totalNeededUsers
       users = responseData.data || []
     } else {
       responseData = reply.data.images
-      console.log("🚀 ~ fetchUsersOrImages ~ responseData:", responseData)
       totalImages = responseData.totalImages || 0
       totalImagesFound = responseData.totalNeededImages
       images = responseData.data || []

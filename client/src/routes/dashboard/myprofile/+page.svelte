@@ -82,7 +82,6 @@
     }
 
     const reply = await response.json()
-    console.log("🚀 ~ onChoiceConfirm ~ reply:", reply)
     let responseData
     if (!reply.errors) {
       if (currentOperation === "deleteAccount") {
