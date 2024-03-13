@@ -52,7 +52,7 @@ export const userTypeDefs = gql`
     sortBy: String
     sortOrder: String
     showDeleted: Boolean
-    searchQuery: Int
+    searchQuery: String
     searchColumn: String
   }
 

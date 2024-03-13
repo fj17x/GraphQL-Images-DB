@@ -52,7 +52,7 @@ export const imageTypeDefs = gql`
     sortOrder: String
     showDeleted: Boolean
     showFlagged: Boolean
-    searchQuery: Int
+    searchQuery: String
     searchColumn: String
     tags: [String!]
   }
@@ -71,6 +71,7 @@ export const imageTypeDefs = gql`
     title: String!
     createdAt: String!
     updatedAt: String!
+    destroyTime: String
     isFlagged: Boolean
     ownerId: Int
     description: String
@@ -84,6 +85,7 @@ export const imageTypeDefs = gql`
     title: String
     createdAt: String
     updatedAt: String
+    destroyTime: String
     isFlagged: Boolean
     ownerId: Int
     description: String

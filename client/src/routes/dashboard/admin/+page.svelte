@@ -55,20 +55,67 @@
     let response
 
     if (forEntity === "users") {
-      response = await fetch(`http://localhost:4000/v1/users/${userIdGiven}`, {
-        method: "PATCH",
+      response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+         mutation PartiallyUpdate($id: Int!, $idToUpdate: Int!, $userName: String, $isAdmin: Boolean, $password: String) {
+            partiallyUpdateUser(userDetails: {
+              idToUpdate: $idToUpdate,
+              id: $id,
+              userName: $userName,
+              isAdmin: $isAdmin,
+              password: $password
+            }) {
+              message
+            }
+          }
+        `,
+          variables: {
+            id: data.id,
+            idToUpdate: userIdGiven,
+            userName: data.userName,
+            isAdmin: data.isAdmin,
+            password: data.password,
+          },
+        }),
         credentials: "include",
-        body: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json",
         },
       })
+
       showEditProfileModal = false
     } else if (forEntity === "images") {
-      response = await fetch(`http://localhost:4000/v1/images/${imageIdGiven}`, {
-        method: "PATCH",
+      response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+          mutation PartiallyUpdate ($id: Int!, $idToUpdate: Int!, $url: String, $title:String, $description: String, $tags: [String!]){
+              partiallyUpdateImage(
+                  imageDetails: {
+                      idToUpdate: $idToUpdate
+                      id: $id
+                      url: $url
+                      title: $title
+                      description: $description
+                      tags: $tags
+                  }
+              ) {
+                  message
+              }
+          }
+        `,
+          variables: {
+            id: data.id,
+            idToUpdate: imageIdGiven,
+            url: data.url,
+            title: data.title,
+            description: data.description,
+            tags: data.tags,
+          },
+        }),
         credentials: "include",
-        body: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json",
         },
@@ -77,54 +124,128 @@
     }
 
     const reply = await response.json()
-    if (response.ok) {
+    let responseMessage
+    if (!reply.errors) {
+      responseMessage = forEntity === "users" ? reply.data.partiallyUpdateUser.message : reply.data.partiallyUpdateImage.message
       alertModalOptions.header = "Successfully updated"
       alertModalOptions.message = reply.message
       alertModalOptions.type = "success"
       await fetchUsersOrImages()
       showAlertModal = true
     } else {
+      responseMessage = reply.errors[0].extensions.response.body.details ?? reply.errors[0].extensions.response.body.error
       alertModalOptions.header = "Could not update"
-      alertModalOptions.message = reply.details ?? reply.error
+      alertModalOptions.message = responseMessage
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
   }
 
   const fetchUsersOrImages = async () => {
-    const queryParams = new URLSearchParams({
-      offset: ((clickedBox === "users" ? currentPageForUsers : currentPageForImages) - 1) * resultsPerPage,
-      limit: resultsPerPage,
-      sortBy: sortByQuery,
-      sortOrder: sortOrderQuery,
-      showDeleted: true,
-    })
-
-    if (clickedBox === "images") {
-      queryParams.append("showFlagged", true)
-    }
-
-    if (searchQuery) {
-      queryParams.append("searchQuery", searchQuery)
-    }
-
-    if (searchColumn) {
-      queryParams.append("searchColumn", searchColumn)
-    }
-
+    const offset = ((clickedBox === "users" ? currentPageForUsers : currentPageForImages) - 1) * resultsPerPage
     if (first) {
-      const responseUsers = await fetch(`http://localhost:4000/v1/users?${queryParams}`, {
-        method: "GET",
+      const responseUsers = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+          query Users ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String){
+              users(
+                query: {
+                      limit: $limit
+                      offset: $offset
+                      sortBy: $sortBy
+                      sortOrder: $sortOrder
+                      showDeleted: $showDeleted
+                      searchQuery: $searchQuery
+                      searchColumn: $searchColumn
+                  }
+              ) {
+                  data {
+                      id
+                      userName
+                      isAdmin
+                      createdAt
+                      updatedAt
+                      destroyTime
+                    }
+                  totalUsers
+                  totalNeededUsers
+              }
+          }
+          `,
+          variables: {
+            limit: resultsPerPage,
+            offset,
+            sortOrder: sortOrderQuery,
+            sortBy: sortByQuery,
+            showDeleted: true,
+            searchQuery,
+            searchColumn,
+          },
+        }),
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
 
-      const responseImages = await fetch(`http://localhost:4000/v1/images?${queryParams}`, {
-        method: "GET",
+      console.log("🚀 ~ fetchUsersOrImages ~ searchQuery:", searchQuery)
+      const responseImages = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+          query Images ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String, $tags: [String!]){
+              images(
+                query: {
+                      limit: $limit
+                      offset: $offset
+                      sortBy: $sortBy
+                      sortOrder: $sortOrder
+                      showDeleted: $showDeleted
+                      searchQuery: $searchQuery
+                      searchColumn: $searchColumn
+                      tags: $tags
+                  }
+              ) {
+                  data {
+                      id
+                      url
+                      title
+                      description
+                      ownerId
+                      tags
+                      isFlagged
+                      createdAt
+                      updatedAt
+                      destroyTime
+                  }
+                  totalImages
+                  totalNeededImages
+              }
+              
+          }
+          `,
+          variables: {
+            limit: resultsPerPage,
+            offset,
+            sortOrder: sortOrderQuery,
+            sortBy: sortByQuery,
+            showDeleted: true,
+            searchQuery,
+            searchColumn,
+          },
+        }),
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
 
-      const dataUsers = await responseUsers.json()
-      const dataImages = await responseImages.json()
+      let dataUsers = await responseUsers.json()
+      dataUsers = dataUsers.data.users
+
+      let dataImages = await responseImages.json()
+      dataImages = dataImages.data.images
 
       totalUsers = dataUsers.totalUsers || 0
       totalUsersFound = totalUsers
@@ -140,22 +261,120 @@
       return
     }
 
-    const url = `http://localhost:4000/v1/${clickedBox === "users" ? "users" : "images"}?${queryParams}`
-    const response = await fetch(url, {
-      method: "GET",
-      credentials: "include",
-    })
-    const data = await response.json()
+    let response
+    if (clickedBox === "users") {
+      response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+          query Users ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String){
+              users(
+                query: {
+                      limit: $limit
+                      offset: $offset
+                      sortBy: $sortBy
+                      sortOrder: $sortOrder
+                      showDeleted: $showDeleted
+                      searchQuery: $searchQuery
+                      searchColumn: $searchColumn
+                  }
+              ) {
+                  data {
+                      id
+                      userName
+                      isAdmin
+                      createdAt
+                      updatedAt
+                      destroyTime
+                    }
+                    totalUsers
+                    totalNeededUsers
+              }
+          }
+          `,
+          variables: {
+            limit: resultsPerPage,
+            offset,
+            sortOrder: sortOrderQuery,
+            sortBy: sortByQuery,
+            showDeleted: true,
+            searchQuery,
+            searchColumn,
+          },
+        }),
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    } else {
+      response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+          query Images ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String){
+              images(
+                query: {
+                      limit: $limit
+                      offset: $offset
+                      sortBy: $sortBy
+                      sortOrder: $sortOrder
+                      showDeleted: $showDeleted
+                      searchQuery: $searchQuery
+                      searchColumn: $searchColumn
+                  }
+              ) {
+                  data {
+                      id
+                      url
+                      title
+                      description
+                      ownerId
+                      tags
+                      isFlagged
+                      createdAt
+                      updatedAt
+                      destroyTime
+                  }
+                  totalImages
+                  totalNeededImages
+              }
+              
+          }
+          `,
+          variables: {
+            limit: resultsPerPage,
+            offset,
+            sortOrder: sortOrderQuery,
+            sortBy: sortByQuery,
+            showDeleted: true,
+            searchQuery: searchQuery === "" ? null : searchQuery,
+            searchColumn,
+          },
+        }),
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    }
+
+    let reply = await response.json()
+    console.log("🚀 ~ fetchUsersOrImages ~ reply:", reply)
+    let responseData
 
     if (clickedBox === "users") {
-      totalUsers = data.totalUsers || 0
-      totalUsersFound = data.totalNeededUsers
-
-      users = data.data || []
+      responseData = reply.data.users
+      console.log("🚀 ~ fetchUsersOrImages ~ responseData:", responseData)
+      totalUsers = responseData.totalUsers || 0
+      totalUsersFound = responseData.totalNeededUsers
+      users = responseData.data || []
     } else {
-      totalImages = data.totalImages || 0
-      totalImagesFound = data.totalNeededImages
-      images = data.data || []
+      responseData = reply.data.images
+      console.log("🚀 ~ fetchUsersOrImages ~ responseData:", responseData)
+      totalImages = responseData.totalImages || 0
+      totalImagesFound = responseData.totalNeededImages
+      images = responseData.data || []
     }
   }
 
@@ -254,17 +473,33 @@
   }
 
   const handleImageFlagging = async (flag) => {
-    const response = await fetch(`http://localhost:4000/v1/images/${imageIdGiven}`, {
-      method: "PATCH",
+    const response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+         mutation PartiallyUpdate($idToUpdate: Int!, $isFlagged: Boolean!) {
+            partiallyUpdateImage(imageDetails: {
+              idToUpdate: $idToUpdate,
+              isFlagged: $isFlagged
+            }) {
+              message
+            }
+          }
+        `,
+        variables: {
+          idToUpdate: imageIdGiven,
+          isFlagged: flag,
+        },
+      }),
       credentials: "include",
-      body: JSON.stringify({ isFlagged: flag }),
       headers: {
         "Content-Type": "application/json",
       },
     })
+
     const reply = await response.json()
 
-    if (response.ok) {
+    if (!reply.errors) {
       alertModalOptions.header = "Operation succeeded"
       alertModalOptions.message = flag ? "Image has been flagged." : "Image has been unflagged."
       alertModalOptions.type = "success"
@@ -273,7 +508,7 @@
       await fetchUsersOrImages("images")
     } else {
       alertModalOptions.header = "Operation failed"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = reply.errors[0].extensions.response.body.error
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
@@ -282,15 +517,45 @@
   const handleImageDeletion = async (del) => {
     let response
     if (del) {
-      response = await fetch(`http://localhost:4000/v1/images/${imageIdGiven}`, {
-        method: "DELETE",
+      response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+         mutation PartiallyUpdate($idToUpdate: Int!) {
+            deleteImage(idToUpdate: $idToUpdate) {
+              message
+            }
+          }
+        `,
+          variables: {
+            idToUpdate: imageIdGiven,
+          },
+        }),
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
     } else {
-      response = await fetch(`http://localhost:4000/v1/images/${imageIdGiven}`, {
-        method: "PATCH",
+      response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+         mutation PartiallyUpdate($idToUpdate: Int!, $destroyTime: String) {
+            partiallyUpdateImage(imageDetails: {
+              idToUpdate: $idToUpdate,
+              destroyTime: $destroyTime
+            }) {
+              message
+            }
+          }
+        `,
+          variables: {
+            idToUpdate: imageIdGiven,
+            destroyTime: null,
+          },
+        }),
         credentials: "include",
-        body: JSON.stringify({ destroyTime: null }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -299,14 +564,14 @@
 
     const reply = await response.json()
 
-    if (response.ok) {
+    if (!reply.errors) {
       alertModalOptions.header = "Operation succeeded"
       alertModalOptions.message = del ? "Image has been deleted." : "Image has been restored."
       alertModalOptions.type = "success"
       showAlertModal = true
     } else {
       alertModalOptions.header = "Operation failed"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = reply.errors[0].extensions.response.body.error
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
@@ -317,15 +582,45 @@
   const handleUserDeletion = async (del) => {
     let response
     if (del) {
-      response = await fetch(`http://localhost:4000/v1/users/${userIdGiven}`, {
-        method: "DELETE",
+      response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+         mutation PartiallyUpdate($idToUpdate: Int!) {
+            deleteUser(idToUpdate: $idToUpdate) {
+              message
+            }
+          }
+        `,
+          variables: {
+            idToUpdate: userIdGiven,
+          },
+        }),
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
     } else {
-      response = await fetch(`http://localhost:4000/v1/users/${userIdGiven}`, {
-        method: "PATCH",
+      response = await fetch(`http://localhost:4001/graphql`, {
+        method: "POST",
+        body: JSON.stringify({
+          query: `
+         mutation PartiallyUpdate($idToUpdate: Int!, $destroyTime: String) {
+            partiallyUpdateUser(userDetails: {
+              idToUpdate: $idToUpdate,
+              destroyTime: $destroyTime
+            }) {
+              message
+            }
+          }
+        `,
+          variables: {
+            idToUpdate: imageIdGiven,
+            destroyTime: null,
+          },
+        }),
         credentials: "include",
-        body: JSON.stringify({ destroyTime: null }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -351,20 +646,37 @@
 
   const handleUserEdit = async () => {
     let response
-
-    response = await fetch(`http://localhost:4000/v1/users/${userIdGiven}`, {
-      method: "GET",
+    response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+         query User ($id: Int!) {
+              user(id: $id) {
+                  data {
+                      id
+                      userName
+                  }
+              }
+          }
+        `,
+        variables: {
+          id: userIdGiven,
+        },
+      }),
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
 
     const reply = await response.json()
-    userToEdit = reply.data
 
-    if (response.ok) {
+    if (!reply.errors) {
+      userToEdit = reply.data.user.data
       showEditProfileModal = true
     } else {
       alertModalOptions.header = "Operation failed"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = reply.errors[0].extensions.response.body.error
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
@@ -373,19 +685,41 @@
   const handleImageEdit = async () => {
     let response
 
-    response = await fetch(`http://localhost:4000/v1/images/${imageIdGiven}`, {
-      method: "GET",
+    response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+         query Image ($id: Int!) {
+              image(id: $id) {
+                  data {
+                      id
+                      ownerId
+                      title
+                      description
+                      url
+                      tags
+                  }
+              }
+          }
+        `,
+        variables: {
+          id: imageIdGiven,
+        },
+      }),
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
 
     const reply = await response.json()
-    imageToEdit = reply.data
 
-    if (response.ok) {
+    if (!reply.errors) {
+      imageToEdit = reply.data.image.data
       showEditImageModal = true
     } else {
       alertModalOptions.header = "Operation failed"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = reply.errors[0].extensions.response.body.error
       alertModalOptions.type = "failure"
       showAlertModal = true
     }

@@ -18,11 +18,24 @@
     if (!confirmed) {
       return
     }
-    const response = await fetch(`http://localhost:4000/v1/auth/logout`, {
+    const response = await fetch(`http://localhost:4001/graphql`, {
       method: "POST",
+      body: JSON.stringify({
+        query: `
+          mutation Logout {
+              logout {
+                  message
+              }
+          }
+        `,
+      }),
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
-    if (response.ok) {
+    const reply = await response.json()
+    if (!reply.errors) {
       userDetails.set({})
       goto("/")
     } else {
