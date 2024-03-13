@@ -10,7 +10,8 @@ export const authMutation = {
   register: (_, args, { dataSources }) => {
     return dataSources.AppAPI.register(args)
   },
-  logout: (_, __, { dataSources }) => {
+  logout: (_, __, { dataSources, res }) => {
+    res.clearCookie("jwt")
     return dataSources.AppAPI.logout()
   },
   updateAccountDetails: (_, { detailsToUpdate }, { dataSources }) => {
