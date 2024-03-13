@@ -15,7 +15,7 @@
   let choiceModalOptions = {}
 
   let image
-  let imageId = $page.params.id
+  let imageId = Number($page.params.id)
 
   let showEditImageModal = false
 
@@ -24,23 +24,23 @@
       method: "POST",
       body: JSON.stringify({
         query: `
-          query Image ($imageId: String!) {
-              image (id: $imageId) {
-                  data {
-                      id
-                      url
-                      title
-                      description
-                      ownerId
-                      tags
-                      isFlagged
+          query Image ($imageId: Int!) {
+            image (id: $imageId) {
+              data {
+                id
+                url
+                title
+                description
+                ownerId
+                tags
+                isFlagged
                       createdAt
                       updatedAt
                       destroyTime
                   }
               }
-          }
-        `,
+            }
+            `,
         variables: {
           imageId,
         },
@@ -52,6 +52,7 @@
     })
 
     const imagesReply = await response.json()
+    console.log("🚀 ~ fetchImageWithId ~ imagesReply:", imagesReply)
     image = imagesReply.data.image.data
   }
 
@@ -77,29 +78,48 @@
       showAlertModal = true
       return
     }
-    console.log(data["description"])
 
     showEditImageModal = false
 
-    const response = await fetch(`http://localhost:4000/v1/images/${$page.params.id}`, {
-      method: "PATCH",
+    const response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+         mutation PartiallyUpdateImage($idToUpdate: Int!, $url: String, $title: String, $tags: [String!], $description: String) {
+              partiallyUpdateImage(
+                  imageDetails: { idToUpdate: $idToUpdate, url: $url, title: $title, tags: $tags, description: $description }
+              ) {
+                  message
+              }
+          }
+        `,
+        variables: {
+          idToUpdate: imageId,
+          url: data["url"],
+          title: data["title"],
+          tags: data["tags"],
+          description: data["description"],
+        },
+      }),
       credentials: "include",
-      body: JSON.stringify(data),
       headers: {
         "Content-Type": "application/json",
       },
     })
 
     const reply = await response.json()
-    if (response.ok) {
+    let responseMessage
+    if (!reply.errors) {
+      responseMessage = reply.data.partiallyUpdateImage.message
       alertModalOptions.header = "Successfully updated"
-      alertModalOptions.message = reply.message
+      alertModalOptions.message = `${responseMessage}`
       alertModalOptions.type = "success"
       showAlertModal = true
       await fetchImageWithId()
     } else {
+      responseMessage = reply.errors[0].extensions.response.body.error
       alertModalOptions.header = "Could not update"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = `${responseMessage}`
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
@@ -119,20 +139,38 @@
     }
     let response
 
-    response = await fetch(`http://localhost:4000/v1/images/${imageId}`, {
-      method: "DELETE",
+    response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+         mutation PartiallyUpdate($idToUpdate: Int!) {
+            deleteImage(idToUpdate: $idToUpdate) {
+              message
+            }
+          }
+        `,
+        variables: {
+          idToUpdate: imageId,
+        },
+      }),
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
 
     const reply = await response.json()
-    if (response.ok) {
+    let responseMessage
+    if (!reply.errors) {
+      responseMessage = reply.data.deleteImage.message
       alertModalOptions.header = "Operation succeeded"
-      alertModalOptions.message = reply.message
+      alertModalOptions.message = `${responseMessage}`
       alertModalOptions.type = "success"
       showAlertModal = true
     } else {
+      responseMessage = reply.errors[0].extensions.response.body.error
       alertModalOptions.header = "Operation failed"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = `${responseMessage}`
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
