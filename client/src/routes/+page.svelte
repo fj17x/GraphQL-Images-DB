@@ -16,7 +16,7 @@
         method: "POST",
         body: JSON.stringify({
           query: `
-          query Logout {
+          mutation Logout {
               logout {
                   message
               }
