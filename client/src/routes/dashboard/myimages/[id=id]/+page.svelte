@@ -34,10 +34,13 @@
                 ownerId
                 tags
                 isFlagged
-                      createdAt
-                      updatedAt
-                      destroyTime
-                  }
+                createdAt
+                updatedAt
+                destroyTime
+                user {
+                  userName
+                }   
+              }
               }
             }
             `,
@@ -211,7 +214,7 @@
             isFlagged={image.isFlagged}
             destroyTime={image.destroyTime}
             id={image.id}
-            ownerUserName={image["owner.userName"]}
+            ownerUserName={image.user.userName}
             ownerId={image.ownerId}
           />
         {:else}

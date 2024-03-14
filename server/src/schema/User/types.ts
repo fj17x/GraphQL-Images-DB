@@ -15,6 +15,8 @@ export const userTypeDefs = gql`
     updatedAt: String!
     "Whether the user has been deleted"
     destroyTime: String
+    "Images a user has uploaded"
+    images: [Image!]
   }
 
   extend type Query {

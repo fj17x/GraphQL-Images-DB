@@ -23,6 +23,8 @@ export const imageTypeDefs = gql`
     updatedAt: String!
     "Whether the image has been deleted"
     destroyTime: String
+    "User who has uploaded the image"
+    user: User
   }
 
   extend type Query {

@@ -1,6 +1,6 @@
 import { gql } from "graphql-tag"
-import { userTypeDefs, userQuery, userMutation } from "./User/index.js"
-import { imageTypeDefs, imageQuery, imageMutation } from "./Image/index.js"
+import { userTypeDefs, userQuery, userMutation, userResolvers } from "./User/index.js"
+import { imageTypeDefs, imageQuery, imageMutation, imageResolvers } from "./Image/index.js"
 import { authTypeDefs, authQuery, authMutation } from "./Auth/index.js"
 import { sharedTypeDefs } from "./Shared/types.js"
 
@@ -24,4 +24,6 @@ export const resolvers = {
     ...imageMutation,
     ...authMutation,
   },
+  Image: imageResolvers,
+  User: userResolvers,
 }
