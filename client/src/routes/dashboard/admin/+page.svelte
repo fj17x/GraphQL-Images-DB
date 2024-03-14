@@ -149,7 +149,7 @@
         body: JSON.stringify({
           query: `
           query Users ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String){
-              users(
+            users(
                 query: {
                       limit: $limit
                       offset: $offset
@@ -158,12 +158,12 @@
                       showDeleted: $showDeleted
                       searchQuery: $searchQuery
                       searchColumn: $searchColumn
-                  }
-              ) {
-                  data {
-                      id
-                      userName
-                      isAdmin
+                    }
+                    ) {
+                      data {
+                        id
+                        userName
+                        isAdmin
                       createdAt
                       updatedAt
                       destroyTime
@@ -297,7 +297,7 @@
             sortOrder: sortOrderQuery,
             sortBy: sortByQuery,
             showDeleted: true,
-            searchQuery,
+            searchQuery: searchQuery === "" ? undefined : searchQuery,
             searchColumn,
           },
         }),
@@ -347,7 +347,7 @@
             sortOrder: sortOrderQuery,
             sortBy: sortByQuery,
             showDeleted: true,
-            searchQuery: searchQuery === "" ? null : searchQuery,
+            searchQuery: searchQuery === "" ? undefined : searchQuery,
             searchColumn,
           },
         }),
@@ -359,18 +359,19 @@
     }
 
     let reply = await response.json()
+    console.log("🚀 ~ fetchUsersOrImages ~ reply:", reply)
     let responseData
 
     if (clickedBox === "users") {
       responseData = reply.data.users
-      totalUsers = responseData.totalUsers || 0
-      totalUsersFound = responseData.totalNeededUsers
-      users = responseData.data || []
+      totalUsers = responseData?.totalUsers || 0
+      totalUsersFound = responseData?.totalNeededUsers
+      users = responseData?.data || []
     } else {
       responseData = reply.data.images
-      totalImages = responseData.totalImages || 0
-      totalImagesFound = responseData.totalNeededImages
-      images = responseData.data || []
+      totalImages = responseData?.totalImages || 0
+      totalImagesFound = responseData?.totalNeededImages
+      images = responseData?.data || []
     }
   }
 
