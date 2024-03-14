@@ -269,6 +269,8 @@
 
   const handleClick = async (box) => {
     clickedBox = box
+    console.log("🚀 ~ handleClick ~ users:", users)
+    console.log("🚀 ~ handleClick ~ images:", images)
     columns = Object.keys(clickedBox === "users" ? users[0] : images[0])
     searchQuery = ""
     await fetchUsersOrImages()
@@ -464,7 +466,6 @@
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
-    images = []
     await fetchUsersOrImages("images")
   }
 
@@ -523,7 +524,6 @@
       alertModalOptions.message = del ? "User has been deleted." : "User has been restored."
       alertModalOptions.type = "success"
       showAlertModal = true
-      users = []
       await fetchUsersOrImages("users")
     } else {
       alertModalOptions.header = "Operation failed"
