@@ -141,237 +141,129 @@
     }
   }
 
-  const fetchUsersOrImages = async () => {
-    const offset = ((clickedBox === "users" ? currentPageForUsers : currentPageForImages) - 1) * resultsPerPage
-    if (first) {
-      const responseUsers = await fetch(`http://localhost:4001/graphql`, {
-        method: "POST",
-        body: JSON.stringify({
-          query: `
-          query Users ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String){
-            users(
-                query: {
-                      limit: $limit
-                      offset: $offset
-                      sortBy: $sortBy
-                      sortOrder: $sortOrder
-                      showDeleted: $showDeleted
-                      searchQuery: $searchQuery
-                      searchColumn: $searchColumn
-                    }
-                    ) {
-                      data {
-                        id
-                        userName
-                        isAdmin
-                      createdAt
-                      updatedAt
-                      destroyTime
-                    }
-                  totalUsers
-                  totalNeededUsers
-              }
-          }
-          `,
-          variables: {
-            limit: resultsPerPage,
-            offset,
-            sortOrder: sortOrderQuery,
-            sortBy: sortByQuery,
-            showDeleted: true,
-            searchQuery,
-            searchColumn,
-          },
-        }),
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+  const fetchData = async (query, variables) => {
+    const response = await fetch(`http://localhost:4001/graphql`, {
+      method: "POST",
+      body: JSON.stringify({ query, variables }),
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    return await response.json()
+  }
 
-      const responseImages = await fetch(`http://localhost:4001/graphql`, {
-        method: "POST",
-        body: JSON.stringify({
-          query: `
-          query Images ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String, $tags: [String!]){
-              images(
-                query: {
-                      limit: $limit
-                      offset: $offset
-                      sortBy: $sortBy
-                      sortOrder: $sortOrder
-                      showDeleted: $showDeleted
-                      searchQuery: $searchQuery
-                      searchColumn: $searchColumn
-                      tags: $tags
-                  }
-              ) {
-                  data {
-                      id
-                      url
-                      title
-                      description
-                      ownerId
-                      tags
-                      isFlagged
-                      createdAt
-                      updatedAt
-                      destroyTime
-                  }
-                  totalImages
-                  totalNeededImages
-              }
-              
-          }
-          `,
-          variables: {
-            limit: resultsPerPage,
-            offset,
-            sortOrder: sortOrderQuery,
-            sortBy: sortByQuery,
-            showDeleted: true,
-            searchQuery,
-            searchColumn,
-          },
-        }),
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-
-      let dataUsers = await responseUsers.json()
-      dataUsers = dataUsers.data.users
-
-      let dataImages = await responseImages.json()
-      dataImages = dataImages.data.images
-
-      totalUsers = dataUsers.totalUsers || 0
-      totalUsersFound = totalUsers
-      users = dataUsers.data || []
-      totalImages = dataImages.totalImages || 0
-      totalImagesFound = totalImages
-      images = dataImages.data || []
-
-      first = false
-      if (users.length > 0) {
-        columns = Object.keys(users[0])
+  const fetchUsers = async (variables) => {
+    const query = `
+    query Users ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String) {
+      users(query: {
+        limit: $limit,
+        offset: $offset,
+        sortBy: $sortBy,
+        sortOrder: $sortOrder,
+        showDeleted: $showDeleted,
+        searchQuery: $searchQuery,
+        searchColumn: $searchColumn
+      }) {
+        data {
+          id
+          userName
+          isAdmin
+          createdAt
+          updatedAt
+          destroyTime
+        }
+        totalUsers
+        totalNeededUsers
       }
-      return
     }
+  `
+    return await fetchData(query, variables)
+  }
 
-    let response
-    if (clickedBox === "users") {
-      response = await fetch(`http://localhost:4001/graphql`, {
-        method: "POST",
-        body: JSON.stringify({
-          query: `
-          query Users ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String){
-              users(
-                query: {
-                      limit: $limit
-                      offset: $offset
-                      sortBy: $sortBy
-                      sortOrder: $sortOrder
-                      showDeleted: $showDeleted
-                      searchQuery: $searchQuery
-                      searchColumn: $searchColumn
-                  }
-              ) {
-                  data {
-                      id
-                      userName
-                      isAdmin
-                      createdAt
-                      updatedAt
-                      destroyTime
-                    }
-                    totalUsers
-                    totalNeededUsers
-              }
-          }
-          `,
-          variables: {
-            limit: resultsPerPage,
-            offset,
-            sortOrder: sortOrderQuery,
-            sortBy: sortByQuery,
-            showDeleted: true,
-            searchQuery: searchQuery === "" ? undefined : searchQuery,
-            searchColumn,
-          },
-        }),
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-    } else {
-      response = await fetch(`http://localhost:4001/graphql`, {
-        method: "POST",
-        body: JSON.stringify({
-          query: `
-          query Images ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String){
-              images(
-                query: {
-                      limit: $limit
-                      offset: $offset
-                      sortBy: $sortBy
-                      sortOrder: $sortOrder
-                      showDeleted: $showDeleted
-                      searchQuery: $searchQuery
-                      searchColumn: $searchColumn
-                  }
-              ) {
-                  data {
-                      id
-                      url
-                      title
-                      description
-                      ownerId
-                      tags
-                      isFlagged
-                      createdAt
-                      updatedAt
-                      destroyTime
-                  }
-                  totalImages
-                  totalNeededImages
-              }
-              
-          }
-          `,
-          variables: {
-            limit: resultsPerPage,
-            offset,
-            sortOrder: sortOrderQuery,
-            sortBy: sortByQuery,
-            showDeleted: true,
-            searchQuery: searchQuery === "" ? undefined : searchQuery,
-            searchColumn,
-          },
-        }),
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+  const fetchImages = async (variables) => {
+    const query = `
+    query Images ($limit: Int, $offset: Int, $sortBy: String, $sortOrder: String, $showDeleted: Boolean, $searchQuery: String, $searchColumn: String) {
+      images(query: {
+        limit: $limit,
+        offset: $offset,
+        sortBy: $sortBy,
+        sortOrder: $sortOrder,
+        showDeleted: $showDeleted,
+        searchQuery: $searchQuery,
+        searchColumn: $searchColumn
+      }) {
+        data {
+          id
+          url
+          title
+          description
+          ownerId
+          tags
+          isFlagged
+          createdAt
+          updatedAt
+          destroyTime
+        }
+        totalImages
+        totalNeededImages
+      }
     }
+  `
+    return await fetchData(query, variables)
+  }
 
-    let reply = await response.json()
-    console.log("🚀 ~ fetchUsersOrImages ~ reply:", reply)
-    let responseData
-
+  const updateData = (responseData) => {
     if (clickedBox === "users") {
-      responseData = reply.data.users
-      totalUsers = responseData?.totalUsers || 0
+      totalUsers = responseData?.totalUsers || totalUsers
       totalUsersFound = responseData?.totalNeededUsers
       users = responseData?.data || []
     } else {
-      responseData = reply.data.images
-      totalImages = responseData?.totalImages || 0
+      totalImages = responseData?.totalImages || totalImages
       totalImagesFound = responseData?.totalNeededImages
       images = responseData?.data || []
+    }
+  }
+
+  const fetchUsersOrImages = async () => {
+    const offset = ((clickedBox === "users" ? currentPageForUsers : currentPageForImages) - 1) * resultsPerPage
+
+    let variables = {
+      limit: resultsPerPage,
+      offset,
+      sortOrder: sortOrderQuery,
+      sortBy: sortByQuery,
+      showDeleted: true,
+      searchQuery: searchQuery === "" ? undefined : searchQuery,
+      searchColumn,
+    }
+
+    let responseData
+    if (first) {
+      const responseUsers = await fetchUsers(variables)
+      const responseImages = await fetchImages(variables)
+
+      responseData = {
+        users: responseUsers.data.users,
+        images: responseImages.data.images,
+      }
+
+      totalUsers = responseData.users.totalUsers || 0
+      totalUsersFound = totalUsers
+      users = responseData.users.data || []
+      totalImages = responseData.images.totalImages || 0
+      totalImagesFound = totalImages
+      images = responseData.images.data || []
+
+      first = false
+
+      if (users.length > 0) {
+        columns = Object.keys(users[0])
+      }
+    } else {
+      const response = clickedBox === "users" ? await fetchUsers(variables) : await fetchImages(variables)
+      responseData = clickedBox === "users" ? response.data.users : response.data.images
+      updateData(responseData)
     }
   }
 
@@ -613,7 +505,7 @@
           }
         `,
           variables: {
-            idToUpdate: imageIdGiven,
+            idToUpdate: userIdGiven,
             destroyTime: null,
           },
         }),
@@ -626,7 +518,7 @@
 
     const reply = await response.json()
 
-    if (response.ok) {
+    if (!reply.errors) {
       alertModalOptions.header = "Operation succeeded"
       alertModalOptions.message = del ? "User has been deleted." : "User has been restored."
       alertModalOptions.type = "success"
@@ -635,7 +527,7 @@
       await fetchUsersOrImages("users")
     } else {
       alertModalOptions.header = "Operation failed"
-      alertModalOptions.message = reply.error
+      alertModalOptions.message = reply.errors[0].extensions.response.body.error
       alertModalOptions.type = "failure"
       showAlertModal = true
     }
