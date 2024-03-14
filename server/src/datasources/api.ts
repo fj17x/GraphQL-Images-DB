@@ -52,11 +52,13 @@ class AppAPI extends RESTDataSource {
   }
 
   updateUser(userDetails) {
-    return this.put(`users/${userDetails.idToUpdate}`, { body: userDetails })
+    const { idToUpdate, ...fieldsToUpdate } = userDetails
+    return this.put(`users/${userDetails.idToUpdate}`, { body: fieldsToUpdate })
   }
 
   partiallyUpdateUser(userDetails) {
-    return this.patch(`users/${userDetails.idToUpdate}`, { body: userDetails })
+    const { idToUpdate, ...fieldsToUpdate } = userDetails
+    return this.patch(`users/${userDetails.idToUpdate}`, { body: fieldsToUpdate })
   }
 
   createImage(imageDetails) {
@@ -68,11 +70,13 @@ class AppAPI extends RESTDataSource {
   }
 
   updateImage(imageDetails) {
-    return this.put(`images/${imageDetails.idToUpdate}`, { body: imageDetails })
+    const { idToUpdate, ...fieldsToUpdate } = imageDetails
+    return this.put(`images/${imageDetails.idToUpdate}`, { body: fieldsToUpdate })
   }
 
   partiallyUpdateImage(imageDetails) {
-    return this.patch(`images/${imageDetails.idToUpdate}`, { body: imageDetails })
+    const { idToUpdate, ...fieldsToUpdate } = imageDetails
+    return this.patch(`images/${imageDetails.idToUpdate}`, { body: fieldsToUpdate })
   }
 
   deleteAllImages() {
