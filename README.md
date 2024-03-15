@@ -1,0 +1,43 @@
+## Populating the database
+
+```bash
+# Go to scripts directory.
+cd restapi/scripts
+
+# Run populate_db.sql file (Assuming username and password are "postgres").
+psql --username postgres -f populate_db.sql
+```
+
+## Initiating API
+
+```bash
+# Go to api directory.
+cd restapi
+
+# Start server.
+npm start
+```
+
+## Initiating graphQL layer
+```bash
+# Go to api directory.
+cd graphql
+
+# Start server.
+npm start
+```
+
+## Initiating client
+
+```bash
+# Go to client directory.
+cd client
+
+# Start client.
+npm start
+```
+
+You can now view the application at http://localhost:5173/
+
+NOTE: Admin's username is 'admin'. Password for every user is '1234'. 
+
